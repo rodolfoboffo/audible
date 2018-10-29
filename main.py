@@ -19,10 +19,10 @@ def myCos(x, sineArray):
     i = int((math.pi/2.0 - x)/(2*math.pi)*len(sineArray))%len(sineArray)
     return sineArray[i]
 
-def generatePureSine(amplitude, frequency, duration, sampleRate, sineArray):
+def generatePureSine(amplitude, frequency, duration, sampleRate, sineArray, phase=0.0):
     data = []
     for i in range(int(sampleRate*duration)):
-        data.append(amplitude*mySin(2*math.pi*frequency*i/sampleRate, sineArray))
+        data.append(amplitude*mySin(2*math.pi*frequency*i/sampleRate + phase, sineArray))
     return np.array(data)
 
 def sumSignals(signal1, signal2):
@@ -50,6 +50,20 @@ def multiplySignals(signal1, signal2):
 def getSample(signal, index):
     return signal[index] if len(signal) > index else None
 
+def discreteFourierTransform(signal, nBins, sineArray):
+    reals, img = [], []
+    for m in range(nBins):
+        reals.append(0.0)
+        img.append(0.0)
+        for n in range(nBins):
+            reals[-1] += signal[n]*myCos(2*math.pi*n*m/nBins ,sineArray)
+            img[-1] += signal[n]*mySin(2*math.pi*n*m/nBins, sineArray)
+    mags, phases = [], []
+    for i in range(nBins):
+        mags.append(math.sqrt(reals[i]*reals[i] + img[i]*img[i]))
+        phases.append(360.0*math.atan(img[i]/reals[i])/(2*math.pi))
+    return mags, phases
+
 def main():
     wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
     player = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
@@ -57,21 +71,36 @@ def main():
     audioDuration = 1
     sinusoidDetail = 512
     frequency = 300.0
+    sampleFrequency = 8000.0
+    bins = 750
 
     sineTable = getSineTable(sinusoidDetail)
-    print myCos(0, sineTable)
+    signal1 = generatePureSine(1.0, 1000.0, 1.0, sampleFrequency, sineTable)
+    signal2 = generatePureSine(0.5, 2000.0, 1.0, sampleFrequency, sineTable, phase=(3*math.pi/4.0))
+    signal3 = sumSignals(signal1, signal2)
+
+    dft = discreteFourierTransform(signal3, bins, sineTable)
+    #print dft
+    #s1 = generatePureSine(1.0, 3.0, 1.0, 200, sineTable)
+    #s2 = generatePureSine(1.0, 3.0, 1.0, 200, sineTable, phase=math.pi/2)
+    #print signal3
+    # print myCos(0, sineTable)
     # data1 = generatePureSine(1, 1, 4, sampleRate, sineTable)
-    # # pyplot.plot(range(len(data1)), data1)
+    #pyplot.plot(range(len(signal1)), signal1)
+    #pyplot.plot(range(len(signal2)), signal2)
+    #pyplot.plot(range(len(signal3)), signal3)
     # data2 = generatePureSine(1, 1000, 4, sampleRate, sineTable)
     # # pyplot.plot(range(len(data2)), data2)
     # data3 = multiplySignals(data1, data2)
-    # pyplot.plot(range(len(data3)), data3)
-    # pyplot.show()
+    pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dft[0]))), dft[0])
+    #pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dft[1]))), dft[1])
+    #pyplot.plot(range(len(signal3[:8])), signal3[:8])
+    pyplot.show()
 
     # print data
     #
-    # scipy.io.wavfile.write(wavFile, sampleRate, data3)
-    # call([player, wavFile])
+    #scipy.io.wavfile.write(wavFile, sampleRate, signal3)
+    #call([player, wavFile])
 
 if __name__ == "__main__":
     main()
