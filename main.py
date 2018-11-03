@@ -50,20 +50,24 @@ def multiplySignals(signal1, signal2):
 def getSample(signal, index):
     return signal[index] if len(signal) > index else None
 
+def hanningFunction(sampleIndex, totalSamples, sineArray):
+    return 0.5 - 0.5*myCos(2*math.pi*sampleIndex/totalSamples, sineArray)
+	
 def discreteFourierTransform(signal, nBins, sineArray):
     reals, img = [], []
+    windowingFunction = hanningFunction
     for m in range(nBins):
         reals.append(0.0)
         img.append(0.0)
         for n in range(nBins):
-            reals[-1] += signal[n]*myCos(2*math.pi*n*m/nBins ,sineArray)
-            img[-1] += signal[n]*mySin(2*math.pi*n*m/nBins, sineArray)
+            reals[-1] += windowingFunction(n, nBins, sineArray)*signal[n]*myCos(2*math.pi*n*m/nBins ,sineArray)
+            img[-1] += windowingFunction(n, nBins, sineArray)*signal[n]*mySin(2*math.pi*n*m/nBins, sineArray)
     mags, phases = [], []
     for i in range(nBins):
         mags.append(math.sqrt(reals[i]*reals[i] + img[i]*img[i]))
         phases.append(360.0*math.atan(img[i]/reals[i])/(2*math.pi))
     return mags, phases
-
+	
 def main():
     wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
     player = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
