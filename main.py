@@ -62,49 +62,69 @@ def discreteFourierTransform(signal, nBins, sineArray):
         for n in range(nBins):
             reals[-1] += windowingFunction(n, nBins, sineArray)*signal[n]*myCos(2*math.pi*n*m/nBins ,sineArray)
             img[-1] += windowingFunction(n, nBins, sineArray)*signal[n]*mySin(2*math.pi*n*m/nBins, sineArray)
+    return reals, img
+
+def getMagnitudesFromDFT(dft):
     mags, phases = [], []
-    for i in range(nBins):
-        mags.append(math.sqrt(reals[i]*reals[i] + img[i]*img[i]))
-        phases.append(360.0*math.atan(img[i]/reals[i])/(2*math.pi))
-    return mags, phases
+    if isinstance(dft, tuple):
+        reals, img = dft
+        for i in range(len(reals)):
+            mags.append(math.sqrt(reals[i] * reals[i] + img[i] * img[i]))
+            phases.append(360.0 * math.atan(img[i] / reals[i]) / (2 * math.pi))
+    else:
+        for i in range(len(dft)):
+            mags.append(math.sqrt(dft[i].real * dft[i].real + dft[i].imag * dft[i].imag))
+            phases.append(360.0 * math.atan(dft[i].imag / dft[i].real) / (2 * math.pi))
+    return mags
 	
 def main():
-    wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
+    #wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
+    #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_AF.wav"
+    #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_IF.wav"
+    wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_RF.wav"
     player = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
     sampleRate = 44100
     audioDuration = 1
     sinusoidDetail = 512
     frequency = 300.0
     sampleFrequency = 8000.0
-    bins = 750
-
-    sineTable = getSineTable(sinusoidDetail)
-    signal1 = generatePureSine(1.0, 1000.0, 1.0, sampleFrequency, sineTable)
-    signal2 = generatePureSine(0.5, 2000.0, 1.0, sampleFrequency, sineTable, phase=(3*math.pi/4.0))
-    signal3 = sumSignals(signal1, signal2)
-
-    dft = discreteFourierTransform(signal3, bins, sineTable)
-    #print dft
-    #s1 = generatePureSine(1.0, 3.0, 1.0, 200, sineTable)
-    #s2 = generatePureSine(1.0, 3.0, 1.0, 200, sineTable, phase=math.pi/2)
-    #print signal3
-    # print myCos(0, sineTable)
-    # data1 = generatePureSine(1, 1, 4, sampleRate, sineTable)
+    bins = 19200
+	
+    #sineTable = getSineTable(sinusoidDetail)
+    #signal1 = generatePureSine(1.0, 1000.0, 1.0, sampleFrequency, sineTable)
+    #signal2 = generatePureSine(0.5, 2000.0, 1.0, sampleFrequency, sineTable, phase=(3*math.pi/4.0))
+    #signal3 = sumSignals(signal1, signal2)
+    
+    #dft = discreteFourierTransform(signal3, bins, sineTable)
+    #dftMags = getMagnitudesFromDFT(dft)
     #pyplot.plot(range(len(signal1)), signal1)
     #pyplot.plot(range(len(signal2)), signal2)
     #pyplot.plot(range(len(signal3)), signal3)
     # data2 = generatePureSine(1, 1000, 4, sampleRate, sineTable)
     # # pyplot.plot(range(len(data2)), data2)
     # data3 = multiplySignals(data1, data2)
-    pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dft[0]))), dft[0])
+    #pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dftMags))), dftMags)
     #pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dft[1]))), dft[1])
     #pyplot.plot(range(len(signal3[:8])), signal3[:8])
-    pyplot.show()
+    #pyplot.show()
 
     # print data
     #
     #scipy.io.wavfile.write(wavFile, sampleRate, signal3)
     #call([player, wavFile])
+	
+    wavReadFile = scipy.io.wavfile.read(wavFile)
+    sampleFrequency = wavReadFile[0]
+    print sampleFrequency
+    startTime = 1.2
+    startPoint = int(startTime * sampleFrequency)
+    dft = np.fft.fft(list(map(lambda x: x[0], wavReadFile[1][startPoint:startPoint+bins])))
+    dftMags = getMagnitudesFromDFT(dft)
+    pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dftMags[:bins/2]))), dftMags[:bins/2])
+    dft2 = np.fft.fft(list(map(lambda x: x[1], wavReadFile[1][:bins])))
+    dftMags2 = getMagnitudesFromDFT(dft2)
+    pyplot.plot(map(lambda x: x * sampleFrequency / bins, range(len(dftMags2[:bins / 2]))), dftMags2[:bins / 2])
+    pyplot.show()
 
 if __name__ == "__main__":
     main()
