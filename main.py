@@ -25,6 +25,16 @@ def generatePureSine(amplitude, frequency, duration, sampleRate, sineArray, phas
         data.append(amplitude*mySin(2*math.pi*frequency*i/sampleRate + phase, sineArray))
     return np.array(data)
 
+def generateFMSignal(amplitude, carrierFrequency, audioSignal, sampleRate, sineArray, phase=0.0):
+    data = []
+    phi = phase
+    t = 1.0 / sampleRate
+    for i in range(len(audioSignal)):
+        if i != 0:
+            phi += 2 * math.pi * carrierFrequency * (1.0 + 0.0008*audioSignal[i]) * t
+        data.append(amplitude * mySin(phi, sineArray))
+    return np.array(data)
+
 def sumSignals(signal1, signal2):
     r = []
     if (isinstance(signal1, np.ndarray) and isinstance(signal2, np.ndarray)):
@@ -81,17 +91,39 @@ def main():
     #wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
     #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_AF.wav"
     #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_IF.wav"
-    wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_RF.wav"
-    player = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
-    sampleRate = 44100
-    audioDuration = 1
+    #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_RF.wav"
+    wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_RF_My_RF.wav"
+    #player = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+    audioDuration = 8.0
     sinusoidDetail = 512
     frequency = 300.0
-    sampleFrequency = 8000.0
+    sampleFrequency = 960000.0
     bins = 19200
 	
-    #sineTable = getSineTable(sinusoidDetail)
-    #signal1 = generatePureSine(1.0, 1000.0, 1.0, sampleFrequency, sineTable)
+    sineTable = getSineTable(sinusoidDetail)
+
+    #signal1 = generatePureSine(1.0, 1.0, 10, 1024, sineTable)
+    #signal2 = generateFMSignal(1.0, 3.0, signal1, 1024, sineTable)
+    #pyplot.plot(range(len(signal1)), signal1)
+    #pyplot.plot(range(len(signal2)), signal2)
+    #pyplot.show()
+
+    lo = generatePureSine(1.0, 106300000.0, audioDuration, sampleFrequency, sineTable)
+    loShifted = generatePureSine(1.0, 106300000.0, audioDuration, sampleFrequency, sineTable, phase=math.pi/2.0)
+    audio = generatePureSine(1.0, 800.0, audioDuration, sampleFrequency, sineTable)
+    audio2 = generatePureSine(1.0, 0.5, audioDuration, sampleFrequency, sineTable)
+    audio3 = multiplySignals(audio, audio2)
+    signal = generateFMSignal(1.0, 106300000.0, audio3, sampleFrequency, sineTable)
+
+    i = multiplySignals(signal, lo)
+    q = multiplySignals(signal, loShifted)
+
+    #pyplot.plot(range(len(i)), i)
+    #pyplot.plot(range(len(q)), q)
+    #pyplot.show()
+
+    scipy.io.wavfile.write(wavFile, int(sampleFrequency), np.array(zip(i, q)))
+
     #signal2 = generatePureSine(0.5, 2000.0, 1.0, sampleFrequency, sineTable, phase=(3*math.pi/4.0))
     #signal3 = sumSignals(signal1, signal2)
     
@@ -113,18 +145,25 @@ def main():
     #scipy.io.wavfile.write(wavFile, sampleRate, signal3)
     #call([player, wavFile])
 	
-    wavReadFile = scipy.io.wavfile.read(wavFile)
-    sampleFrequency = wavReadFile[0]
-    print sampleFrequency
-    startTime = 1.2
-    startPoint = int(startTime * sampleFrequency)
-    dft = np.fft.fft(list(map(lambda x: x[0], wavReadFile[1][startPoint:startPoint+bins])))
-    dftMags = getMagnitudesFromDFT(dft)
-    pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dftMags[:bins/2]))), dftMags[:bins/2])
-    dft2 = np.fft.fft(list(map(lambda x: x[1], wavReadFile[1][:bins])))
-    dftMags2 = getMagnitudesFromDFT(dft2)
-    pyplot.plot(map(lambda x: x * sampleFrequency / bins, range(len(dftMags2[:bins / 2]))), dftMags2[:bins / 2])
-    pyplot.show()
+    #wavReadFile = scipy.io.wavfile.read(wavFile)
+    #sampleFrequency = wavReadFile[0]
+    #print sampleFrequency
+    #signalMag = getMagnitudesFromDFT((list(map(lambda x: x[0], wavReadFile[1])), list(map(lambda x: x[1], wavReadFile[1]))))
+
+    #print len(wavReadFile[1])
+
+    #i = list(map(lambda x: x[0] / 32767.0, wavReadFile[1][:100]))
+    #pyplot.plot(range(len(i)), i)
+    #pyplot.show()
+
+    #startPoint = int(startTime * sampleFrequency)
+    #dft = np.fft.fft(list(map(lambda x: x[0], wavReadFile[1][startPoint:startPoint+bins])))
+    #dftMags = getMagnitudesFromDFT(dft)
+    #pyplot.plot(map(lambda x: x*sampleFrequency/bins, range(len(dftMags[:bins/2]))), dftMags[:bins/2])
+    #dft2 = np.fft.fft(list(map(lambda x: x[1], wavReadFile[1][:bins])))
+    #dftMags2 = getMagnitudesFromDFT(dft2)
+    #pyplot.plot(map(lambda x: x * sampleFrequency / bins, range(len(dftMags2[:bins / 2]))), dftMags2[:bins / 2])
+    #pyplot.show()
 
 if __name__ == "__main__":
     main()
