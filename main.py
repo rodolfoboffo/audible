@@ -8,8 +8,8 @@ import os
 
 class Signal(object):
 
-    def __init__(self, signal, sampleRate):
-        self.signal = signal
+    def __init__(self, samples, sampleRate):
+        self.signal = samples
         self.sampleRate = sampleRate
 
     def getSampleRate(self):
@@ -39,7 +39,7 @@ class ConstantSignal(PeriodicSignal):
     def __init__(self, const, sampleRate):
         super(PeriodicSignal, self).__init__(np.array([const]), sampleRate)
 
-class OperationWithSignals(Signal):
+class BinaryOperation(Signal):
 
     def __init__(self, signal1, signal2, op):
         if signal1.getSampleRate() != signal2.getSampleRate():
@@ -54,24 +54,31 @@ class OperationWithSignals(Signal):
     def get(self, index):
         return self.op(self.signal1.get(index), self.signal2.get(index))
 
-class Sum(OperationWithSignals):
+class Sum(BinaryOperation):
 
     def __init__(self, signal1, signal2):
         op = lambda a, b: a + b
         super(Sum, self).__init__(signal1, signal2, op)
 
-class Subtract(OperationWithSignals):
+class Subtract(BinaryOperation):
 
     def __init__(self, signal1, signal2):
         op = lambda a, b: a - b
         super(Sum, self).__init__(signal1, signal2, op)
 
-class Multiply(OperationWithSignals):
+class Multiply(BinaryOperation):
 
     def __init__(self, signal1, signal2):
         op = lambda a, b: a * b
         super(Sum, self).__init__(signal1, signal2, op)
 
+class PhaseShift(Signal):
+
+    def __init__(self, signal, phase):
+        self.signal = signal
+        self.phaseShift = phase
+
+    def 
 
 def getSineTable(sinusoidDetail):
     sin = []
@@ -87,7 +94,7 @@ def myCos(x, sineArray):
     i = int((math.pi/2.0 - x)/(2*math.pi)*len(sineArray))%len(sineArray)
     return sineArray[i]
 
-def generatePureSine(amplitude, frequency, duration, sampleRate, sineArray, phase=0.0):
+def generatePureSine(amplitude, frequency, sampleRate, sineArray, phase=0.0):
     data = []
     for i in range(int(sampleRate*duration)):
         data.append(amplitude*mySin(2*math.pi*frequency*i/sampleRate + phase, sineArray))
