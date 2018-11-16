@@ -6,181 +6,25 @@ import matplotlib.pyplot as pyplot
 from subprocess import call
 import os
 
-class Signal(object):
-
-    def __init__(self, samples, sampleRate):
-        self.signal = samples
-        self.sampleRate = sampleRate
-
-    def getSampleRate(self):
-        return self.sampleRate
-
-    def get(self, index):
-        return self.signal[index]
-
-    def getRange(self, start=0, end=None):
-        i = start
-        j = end or len(self.signal)
-        s = []
-        while i < j:
-            return s.append(self.get(i))
-        return np.array(s)
-
-class PeriodicSignal(Signal):
-
-    def __init__(self, signal, sampleRate):
-        super(PeriodicSignal, self).__init__(signal, sampleRate)
-
-    def get(self, index):
-        return self.signal[index%len(self.signal)]
-
-class ConstantSignal(PeriodicSignal):
-
-    def __init__(self, const, sampleRate):
-        super(PeriodicSignal, self).__init__(np.array([const]), sampleRate)
-
-class BinaryOperation(Signal):
-
-    def __init__(self, signal1, signal2, op):
-        if signal1.getSampleRate() != signal2.getSampleRate():
-            raise Exception("Sample rates doest'n match.")
-        self.signal1 = signal1
-        self.signal2 = signal2
-        self.op = op
-
-    def getSampleRate(self):
-        return self.signal1.getSampleRate()
-
-    def get(self, index):
-        return self.op(self.signal1.get(index), self.signal2.get(index))
-
-class Sum(BinaryOperation):
-
-    def __init__(self, signal1, signal2):
-        op = lambda a, b: a + b
-        super(Sum, self).__init__(signal1, signal2, op)
-
-class Subtract(BinaryOperation):
-
-    def __init__(self, signal1, signal2):
-        op = lambda a, b: a - b
-        super(Sum, self).__init__(signal1, signal2, op)
-
-class Multiply(BinaryOperation):
-
-    def __init__(self, signal1, signal2):
-        op = lambda a, b: a * b
-        super(Sum, self).__init__(signal1, signal2, op)
-
-class PhaseShift(Signal):
-
-    def __init__(self, signal, phase):
-        self.signal = signal
-        self.phaseShift = phase
-
-    def 
-
-def getSineTable(sinusoidDetail):
-    sin = []
-    for i in range(sinusoidDetail):
-        sin.append(math.sin(2 * math.pi / sinusoidDetail * i))
-    return np.array(sin)
-
-def mySin(x, sineArray):
-    i = int(x/(2*math.pi)*len(sineArray))%len(sineArray)
-    return sineArray[i]
-
-def myCos(x, sineArray):
-    i = int((math.pi/2.0 - x)/(2*math.pi)*len(sineArray))%len(sineArray)
-    return sineArray[i]
-
-def generatePureSine(amplitude, frequency, sampleRate, sineArray, phase=0.0):
-    data = []
-    for i in range(int(sampleRate*duration)):
-        data.append(amplitude*mySin(2*math.pi*frequency*i/sampleRate + phase, sineArray))
-    return np.array(data)
-
-def generateFMSignal(amplitude, carrierFrequency, audioSignal, sampleRate, sineArray, phase=0.0):
-    data = []
-    phi = phase
-    t = 1.0 / sampleRate
-    for i in range(len(audioSignal)):
-        if i != 0:
-            phi += 2 * math.pi * (carrierFrequency + 75000.0*audioSignal[i]) * t
-        data.append(amplitude * mySin(phi, sineArray))
-    return np.array(data)
-
-def sumSignals(signal1, signal2):
-    r = []
-    if (isinstance(signal1, np.ndarray) and isinstance(signal2, np.ndarray)):
-        for i in range(max(len(signal1), len(signal2))):
-            r.append((getSample(signal1, i) or 0.0) + (getSample(signal2, i) or 0.0))
-    else:
-        acSignal, dcSignal = (signal1, signal2) if isinstance(signal1, np.ndarray) else (signal2, signal1)
-        for i in range(len(acSignal)):
-            r.append(acSignal[i] + dcSignal)
-    return np.array(r)
-
-def subtractSignals(signal1, signal2):
-    r = []
-    if (isinstance(signal1, np.ndarray) and isinstance(signal2, np.ndarray)):
-        for i in range(max(len(signal1), len(signal2))):
-            r.append((getSample(signal1, i) or 0.0) - (getSample(signal2, i) or 0.0))
-    else:
-        acSignal, dcSignal, invert = (signal1, signal2, 1.0) if isinstance(signal1, np.ndarray) else (signal2, signal1, -1.0)
-        for i in range(len(acSignal)):
-            r.append((acSignal[i] - dcSignal)*invert)
-    return np.array(r)
-
-def multiplySignals(signal1, signal2):
-    r = []
-    if (isinstance(signal1, np.ndarray) and isinstance(signal2, np.ndarray)):
-        for i in range(max(len(signal1), len(signal2))):
-            r.append((getSample(signal1, i) or 0.0) * (getSample(signal2, i) or 0.0))
-    else:
-        acSignal, dcSignal = (signal1, signal2) if isinstance(signal1, np.ndarray) else (signal2, signal1)
-        for i in range(len(acSignal)):
-            r.append(acSignal[i] * dcSignal)
-    return np.array(r)
-
-def getSample(signal, index):
-    return signal[index] if len(signal) > index else None
-
-def hanningFunction(sampleIndex, totalSamples, sineArray):
-    return 0.5 - 0.5*myCos(2*math.pi*sampleIndex/totalSamples, sineArray)
-	
-def discreteFourierTransform(signal, nBins, sineArray):
-    reals, img = [], []
-    windowingFunction = hanningFunction
-    for m in range(nBins):
-        reals.append(0.0)
-        img.append(0.0)
-        for n in range(nBins):
-            reals[-1] += windowingFunction(n, nBins, sineArray)*signal[n]*myCos(2*math.pi*n*m/nBins ,sineArray)
-            img[-1] += windowingFunction(n, nBins, sineArray)*signal[n]*mySin(2*math.pi*n*m/nBins, sineArray)
-    return reals, img
-
-def getMagnitudesFromDFT(dft):
-    mags, phases = [], []
-    if isinstance(dft, tuple):
-        reals, img = dft
-        for i in range(len(reals)):
-            mags.append(math.sqrt(reals[i] * reals[i] + img[i] * img[i]))
-            phases.append(360.0 * math.atan(img[i] / reals[i]) / (2 * math.pi))
-    else:
-        for i in range(len(dft)):
-            mags.append(math.sqrt(dft[i].real * dft[i].real + dft[i].imag * dft[i].imag))
-            phases.append(360.0 * math.atan(dft[i].imag / dft[i].real) / (2 * math.pi))
-    return mags
-
-def maxMin(signal):
-        max = 0.0
-        min = 0.0
-        for i in range(len(signal)):
-            max = signal[i] if signal[i] > max else max
-            min = signal[i] if signal[i] < min else min
-        print "max", max
-        print "min", min
+# def generateFMSignal(amplitude, carrierFrequency, audioSignal, sampleRate, sineArray, phase=0.0):
+#     data = []
+#     phi = phase
+#     t = 1.0 / sampleRate
+#     for i in range(len(audioSignal)):
+#         if i != 0:
+#             phi += 2 * math.pi * (carrierFrequency + 75000.0*audioSignal[i]) * t
+#         data.append(amplitude * mySin(phi, sineArray))
+#     return np.array(data)
+#
+#
+# def maxMin(signal):
+#         max = 0.0
+#         min = 0.0
+#         for i in range(len(signal)):
+#             max = signal[i] if signal[i] > max else max
+#             min = signal[i] if signal[i] < min else min
+#         print "max", max
+#         print "min", min
 
 def main():
     #wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
