@@ -41,11 +41,12 @@ class Signal(object):
         j = end or len(self.signal)
         s = []
         while i < j:
-            return s.append(self.get(i))
+            s.append(self.get(i))
+            i += 1
         return np.array(s)
 
     def getLength(self, seconds):
-        return self.getRange(0, int(seconds*self.sampleRate))
+        return self.getRange(0, end=int(seconds*self.sampleRate))
 
 class PeriodicSignal(Signal):
 
