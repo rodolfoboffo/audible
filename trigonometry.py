@@ -18,9 +18,6 @@ class SineTable(object):
         i = int(x / const.PI2 * len(self.sineArray)) % len(self.sineArray)
         return self.sineArray[i]
 
-    def arcsin(self, x):
-
-
     def cos(self, x):
         i = int((const.PI_HALF - x) / const.PI2 * len(self.sineArray)) % len(self.sineArray)
         return self.sineArray[i]

@@ -14,12 +14,27 @@ class Signal(object):
     def __init__(self, samples, sampleRate):
         self.signal = samples
         self.sampleRate = sampleRate
+        self.samplePeriod = 1.0 / sampleRate
+        self.integralArray = None
 
     def getSampleRate(self):
         return self.sampleRate
 
     def get(self, index):
         return self.signal[index]
+
+    def integral(self, index):
+        if self.integralArray is None:
+            self.initializeIntegral(self.signal)
+        return self.integralArray[index]
+
+    def initializeIntegral(self, signal):
+        area = 0.0
+        iArray = []
+        for i in range(len(signal)):
+            area += self.samplePeriod * self.get(i)
+            iArray[i] = area
+        return iArray
 
     def getRange(self, start=0, end=None):
         i = start
@@ -40,6 +55,11 @@ class PeriodicSignal(Signal):
     def get(self, index):
         return self.signal[index % len(self.signal)]
 
+    def integral(self, index):
+        if self.integralArray is None:
+            self.initializeIntegral(self.signal)
+        return self.integralArray[index % len(self.signal)] + self.integralArray[-1] * (index / len(self.signal))
+
 
 class ConstantSignal(PeriodicSignal):
 
@@ -54,6 +74,13 @@ class SineWave(Signal):
         self.frequency = frequency
         self.phase = phase
         self.sampleRate = sampleRate
+        self.samplePeriod = 1.0 / sampleRate
 
     def get(self, index):
         return self.amplitude * trigonometry.SINE_TABLE.sin(const.PI2 * self.frequency * index / self.sampleRate + self.phase)
+
+    def integral(self, index):
+        return -1.0 * self.amplitude * (
+                trigonometry.SINE_TABLE.cos(const.PI2 * self.frequency * index / self.sampleRate + self.phase)
+                - trigonometry.SINE_TABLE.cos(self.phase)
+            )
