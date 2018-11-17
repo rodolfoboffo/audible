@@ -22,4 +22,4 @@ class SineTable(object):
         i = int((const.PI_HALF - x) / const.PI2 * len(self.sineArray)) % len(self.sineArray)
         return self.sineArray[i]
 
-SINE_TABLE = SineTable(512)
+SINE_TABLE = SineTable(2048)

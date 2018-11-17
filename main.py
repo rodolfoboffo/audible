@@ -5,16 +5,16 @@ import fractions
 import matplotlib.pyplot as pyplot
 from subprocess import call
 import os
+import util.audio as audio
 from signals import signal
 from signals.modulation import FrequencyModulation
 from plot.plot import SignalPlot
 
 def main():
-
-    sampleRate = 10000
-    s = signal.SineWave(1.0, 1.0, sampleRate)
-    fm = FrequencyModulation(1, 10, s, sampleRate, deviation=4)
-    p = SignalPlot([s, fm])
+    inputWavFile = r"C:\Users\rodolfo\Documents\HDSDR\input_mono.wav"
+    signals = audio.extractSignalsFromWav(inputWavFile)
+    fm = FrequencyModulation()
+    p = SignalPlot(signals)
     p.plotSeconds(4)
 
     #wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
@@ -22,7 +22,7 @@ def main():
     #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_IF.wav"
     #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_RF.wav"
     # wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_RF_My_RF.wav"
-    # inputWavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\input.wav"
+
     # #player = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
     # audioDuration = 8.0
     # sinusoidDetail = 512
