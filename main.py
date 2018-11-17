@@ -6,18 +6,16 @@ import matplotlib.pyplot as pyplot
 from subprocess import call
 import os
 from signals import signal
-from signals.modulation import  WideFrequencyModulation
+from signals.modulation import FrequencyModulation
+from plot.plot import SignalPlot
 
 def main():
 
-    sampleRate = 100
+    sampleRate = 10000
     s = signal.SineWave(1.0, 1.0, sampleRate)
-    fm = WideFrequencyModulation(1, 10, s, sampleRate, deviation=4)
-    sSamples = s.getLength(2)
-    fmSamples = fm.getLength(2)
-    pyplot.plot(range(len(sSamples)), sSamples)
-    pyplot.plot(range(len(fmSamples)), fmSamples)
-    pyplot.show()
+    fm = FrequencyModulation(1, 10, s, sampleRate, deviation=4)
+    p = SignalPlot([s, fm])
+    p.plotSeconds(4)
 
     #wavFile = r"C:\users\rodolfo\desktop\pure-sine.wav"
     #wavFile = r"C:\Users\rodolfo.souza\Documents\HDSDR\HDSDR_20181107_192455Z_106300kHz_AF.wav"

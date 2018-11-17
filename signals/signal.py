@@ -1,12 +1,6 @@
-import math
-import scipy.io.wavfile
 import numpy as np
-import trigonometry
+from signals.math import trigonometry
 import const
-import fractions
-import matplotlib.pyplot as pyplot
-from subprocess import call
-import os
 
 
 class Signal(object):

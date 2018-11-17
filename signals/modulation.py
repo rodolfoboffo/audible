@@ -1,9 +1,9 @@
 import signal
-import trigonometry
+from signals.math import trigonometry
 import const
-import numpy as np
 
-class WideFrequencyModulation(signal.Signal):
+
+class FrequencyModulation(signal.Signal):
 
     def __init__(self, amplitude, carrierFrequency, modulatingSignal, sampleRate, deviation=75000.0):
         self.sampleRate = sampleRate
@@ -15,5 +15,5 @@ class WideFrequencyModulation(signal.Signal):
 
     def get(self, index):
         if index < 0:
-            raise Exception("Negative index not supported for WFM.")
+            raise Exception("Negative index not supported for FM.")
         return self.amplitude * trigonometry.SINE_TABLE.sin(const.PI2 * (self.carrierFrequency * (index * self.samplePeriod) + self.deviation * self.modulatingSignal.integral(index)))
