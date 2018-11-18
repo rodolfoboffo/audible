@@ -15,7 +15,7 @@ class Signal(object):
         return self.sampleRate
 
     def get(self, index):
-        return self.signal[index]
+        return self.signal[index] if index >= 0 and index < len(self.signal) else 0.0
 
     def integral(self, index):
         if self.integralArray is None:
@@ -27,7 +27,8 @@ class Signal(object):
         iArray = []
         for i in range(len(signal)):
             area += self.samplePeriod * self.get(i)
-            iArray[i] = area
+            iArray.append(area)
+        self.integralArray = iArray
         return iArray
 
     def getRange(self, start=0, end=None):
@@ -39,8 +40,9 @@ class Signal(object):
             i += 1
         return np.array(s)
 
-    def getLength(self, seconds):
-        return self.getRange(0, end=int(seconds*self.sampleRate))
+    def getLength(self):
+        return len(self.signal)
+
 
 class PeriodicSignal(Signal):
 
@@ -55,6 +57,8 @@ class PeriodicSignal(Signal):
             self.initializeIntegral(self.signal)
         return self.integralArray[index % len(self.signal)] + self.integralArray[-1] * (index / len(self.signal))
 
+    def getLength(self):
+        return None
 
 class ConstantSignal(PeriodicSignal):
 
@@ -79,3 +83,6 @@ class SineWave(Signal):
                 trigonometry.SINE_TABLE.cos(const.PI2 * self.frequency * index / self.sampleRate + self.phase)
                 - trigonometry.SINE_TABLE.cos(self.phase)
             )
+
+    def getLength(self):
+        return None
