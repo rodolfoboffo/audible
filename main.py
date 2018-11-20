@@ -1,5 +1,5 @@
 import util.audio as audio
-from signals.signal import SineWave, Signal, ConstantSignal
+from signals.signal import SineWave, Signal, ConstantSignal, DigitalSignal
 from signals.operation import Multiply, Sum, Normalize, Subtract
 from signals.modulation import FrequencyModulation, IQModulation, AmplitudeModulation, DSBSCModulation
 from plot.plot import SignalPlot
@@ -24,9 +24,14 @@ def main():
     # resulting = Sum(mono, pilotSubCarrier)
 
     #
-    fm = FrequencyModulation(1.0, 106300000.0, resulting)
-    iq = IQModulation(1.0, 106300000.0, fm)
-    # #
-    audio.exportWavFromSignal(iq.getSignals(), sampleRate * 4, outputWavFile)
+    # fm = FrequencyModulation(1.0, 106300000.0, resulting)
+    # iq = IQModulation(1.0, 106300000.0, fm)
+    # # #
+    # audio.exportWavFromSignal(iq.getSignals(), sampleRate * 4, outputWavFile)
+
+    d = DigitalSignal([0x55], 1, 400, low=-1.0, high=1.0)
+    dsbsc = DSBSCModulation(1.0, 5.3, d, modIndex=0.5)
+    plot = SignalPlot([d, dsbsc])
+    plot.plotSamples(d.getLength())
 if __name__ == "__main__":
     main()

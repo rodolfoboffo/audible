@@ -104,7 +104,7 @@ class SineWave(Signal):
     def getLength(self):
         return None
 
-def DigitalSignal(Signal):
+class DigitalSignal(Signal):
 
     def __init__(self, byteStream, clock, sampleRate, low=0.0, high=1.0):
         super(DigitalSignal, self).__init__(None, sampleRate)
@@ -122,4 +122,5 @@ def DigitalSignal(Signal):
                 b = byte & 0x01
                 v = high if b else low
                 s += [v] * samplePerClock
+                byte = byte >> 1
         return np.array(s)
