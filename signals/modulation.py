@@ -1,7 +1,7 @@
 import signal
 import const
 import signals.operation
-from signals.math import trigonometry
+from signals.smath import trigonometry
 import const
 
 class Modulation(signal.Signal):
@@ -52,3 +52,45 @@ class FrequencyModulation(Modulation):
         if index < 0:
             raise Exception("Negative index not supported for FM.")
         return self.amplitude * trigonometry.SINE_TABLE.sin(const.PI2 * (self.carrierFrequency * (index * self.samplePeriod) + self.deviation * self.modulatingSignal.integral(index)))
+
+class AmplitudeModulation(Modulation):
+
+    def __init__(self, amplitude, carrierFrequency, modulatingSignal, modIndex=0.1):
+        super(AmplitudeModulation, self).__init__(modulatingSignal)
+        self.modIndex = modIndex
+        self.amplitude = amplitude
+        self.carrier = signal.SineWave(self.amplitude, carrierFrequency, self.modulatingSignal.getSampleRate())
+
+    def get(self, index):
+        if index < 0:
+            raise Exception("Negative index not supported for AM.")
+        return self.amplitude * (1.0 + self.modIndex * self.modulatingSignal.get(index)) * self.carrier.get(index)
+
+    def getMax(self):
+        return self.amplitude + self.modIndex
+
+    def getMin(self):
+        return -(self.amplitude + self.modIndex)
+
+class DSBSCModulation(Modulation):
+
+    def __init__(self, amplitude, carrierFrequency, modulatingSignal, modIndex=0.1):
+        super(DSBSCModulation, self).__init__(modulatingSignal)
+        self.modIndex = modIndex
+        self.amplitude = amplitude
+        self.carrier = signal.SineWave(self.amplitude, carrierFrequency, self.modulatingSignal.getSampleRate())
+        self.inverseSignal = signals.operation.Inverse(self.modulatingSignal)
+        self.mod = signals.operation.Subtract(
+            AmplitudeModulation(self.amplitude, carrierFrequency, self.modulatingSignal, modIndex=modIndex),
+            AmplitudeModulation(self.amplitude, carrierFrequency, self.inverseSignal, modIndex=modIndex))
+
+    def get(self, index):
+        if index < 0:
+            raise Exception("Negative index not supported for DSBSC.")
+        return self.mod.get(index)
+
+    def getMax(self):
+        return self.mod.getMax()
+
+    def getMin(self):
+        return self.mod.getMin()

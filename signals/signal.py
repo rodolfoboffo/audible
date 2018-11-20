@@ -1,5 +1,5 @@
 import numpy as np
-from signals.math import trigonometry
+from signals.smath import trigonometry
 import const
 
 
@@ -9,27 +9,40 @@ class Signal(object):
         self.signal = samples
         self.sampleRate = sampleRate
         self.samplePeriod = 1.0 / sampleRate
-        self.integralArray = None
+        self.integralCache = {}
+        self.cache = {}
+        self.max = None
+        self.min = None
 
     def getSampleRate(self):
         return self.sampleRate
 
     def get(self, index):
-        return self.signal[index] if index >= 0 and index < len(self.signal) else 0.0
+        value = self.cache.get(index, None)
+        if value is None:
+            value = self.signal[index] if index >= 0 and index < len(self.signal) else 0.0
+            self.cache[index] = value
+        return value
 
     def integral(self, index):
-        if self.integralArray is None:
-            self.initializeIntegral(self.signal)
-        return self.integralArray[index]
+        i = self.integralCache.get(index, None)
+        if i is None:
+            if index > 0:
+                i = self.integral(index-1) + self.samplePeriod * self.get(index)
+            else:
+                i = self.samplePeriod * self.get(index)
+            self.integralCache[index] = i
+        return i
 
-    def initializeIntegral(self, signal):
-        area = 0.0
-        iArray = []
-        for i in range(len(signal)):
-            area += self.samplePeriod * self.get(i)
-            iArray.append(area)
-        self.integralArray = iArray
-        return iArray
+    def getMax(self):
+        if self.max is None:
+            self.max = np.amax(self.signal)
+        return self.max
+
+    def getMin(self):
+        if self.min is None:
+            self.min = np.amin(self.signal)
+        return self.min
 
     def getRange(self, start=0, end=None):
         i = start
@@ -50,12 +63,10 @@ class PeriodicSignal(Signal):
         super(PeriodicSignal, self).__init__(samples, sampleRate)
 
     def get(self, index):
-        return self.signal[index % len(self.signal)]
+        return super(PeriodicSignal, self).get(index % len(self.signal))
 
     def integral(self, index):
-        if self.integralArray is None:
-            self.initializeIntegral(self.signal)
-        return self.integralArray[index % len(self.signal)] + self.integralArray[-1] * (index / len(self.signal))
+        return super(PeriodicSignal, self).integral(index % len(self.signal)) + super(PeriodicSignal, self).integral(len(self.signal)-1) * (index / len(self.signal))
 
     def getLength(self):
         return None
@@ -74,15 +85,41 @@ class SineWave(Signal):
         self.phase = phase
         self.sampleRate = sampleRate
         self.samplePeriod = 1.0 / sampleRate
+        self.cache = {}
+        self.integralCache = {}
 
     def get(self, index):
-        return self.amplitude * trigonometry.SINE_TABLE.sin(const.PI2 * self.frequency * index / self.sampleRate + self.phase)
+        value = self.cache.get(index, None)
+        if value is None:
+            value = self.amplitude * trigonometry.SINE_TABLE.sin(const.PI2 * self.frequency * index / self.sampleRate + self.phase)
+            self.cache[index] = value
+        return value
 
-    def integral(self, index):
-        return -1.0 * self.amplitude * (
-                trigonometry.SINE_TABLE.cos(const.PI2 * self.frequency * index / self.sampleRate + self.phase)
-                - trigonometry.SINE_TABLE.cos(self.phase)
-            )
+    def getMax(self):
+        return self.amplitude
+
+    def getMin(self):
+        return -1.0 * self.amplitude
 
     def getLength(self):
         return None
+
+def DigitalSignal(Signal):
+
+    def __init__(self, byteStream, clock, sampleRate, low=0.0, high=1.0):
+        super(DigitalSignal, self).__init__(None, sampleRate)
+        self.byteStream = byteStream
+        self.clock = clock
+        self.low = low
+        self.high = high
+        self.signal = self.generateSignal(byteStream, clock, sampleRate, low=low, high=high)
+
+    def generateSignal(self, byteStream, clock, sampleRate, low=0.0, high=1.0):
+        s = []
+        samplePerClock = sampleRate / clock
+        for byte in byteStream:
+            for i in range(8):
+                b = byte & 0x01
+                v = high if b else low
+                s += [v] * samplePerClock
+        return np.array(s)
