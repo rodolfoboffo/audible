@@ -18,3 +18,31 @@ class RadioDataSystem(object):
 
     def getVerificationCode(self, word):
         pass
+
+def crc(value, key, dataLength, crcLength):
+    value = value << crcLength # tamanho da chave - 1
+    key = key << (dataLength-1) # tamanho do dado - tamanho da chave # 14 - 4
+    # print ("%s" % bin(value))[2:-crcLength], ("%s" % bin(value))[-crcLength:]
+    # print ("%s" % bin(key))[2:]
+    i = 0
+    j = 1 << dataLength + crcLength - 1
+    while i < dataLength - crcLength + 1:
+        while j & value == 0 and i < dataLength-crcLength+1:
+            j >>= 1
+            key >>= 1
+            i += 1
+        value = value ^ key
+        j >>= 1
+        key >>= 1
+        i += 1
+        # print "v", ("%s" % bin(value))[2:-crcLength], ("%s" % bin(value))[-crcLength:]
+        # print "k", ("%s" % bin(key))[2:-crcLength], ("%s" % bin(key))[-crcLength:]
+        # print ("%s" % bin(key))[2:]
+    return value
+
+
+def main():
+    crc(int('0b11010011101100', 2), int('0b1011', 2), 14, 3)
+
+if __name__ == "__main__":
+    main()
