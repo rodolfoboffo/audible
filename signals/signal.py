@@ -121,6 +121,6 @@ class DigitalSignal(Signal):
             for i in range(8):
                 b = byte & 0x01
                 v = high if b else low
-                s += [v] * samplePerClock
+                s += [v] * int(samplePerClock)
                 byte = byte >> 1
         return np.array(s)

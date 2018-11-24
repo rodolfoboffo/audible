@@ -141,7 +141,7 @@ class Normalize(UnaryOperation):
     def __init__(self, signal, factor=1.0):
         super(Normalize, self).__init__(signal)
         self.factor = factor
-        self.maxAbs = math.fabs(self.signal.getMax()) if math.fabs(self.signal.getMax()) > math.fabs(self.signal.getMin()) else math.fabs(self.signal.getMin())
+        self.maxAbs = abs(self.signal.getMax()) if abs(self.signal.getMax()) > abs(self.signal.getMin()) else abs(self.signal.getMin())
         self.k = self.factor / self.maxAbs if self.maxAbs != 0.0 else 1.0
 
     def getMax(self):

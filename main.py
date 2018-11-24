@@ -1,5 +1,6 @@
 import util.audio as audio
 from signals.signal import SineWave, Signal, ConstantSignal, DigitalSignal
+from util.rds import RadioDataSystem
 from signals.operation import Multiply, Sum, Normalize, Subtract
 from signals.modulation import FrequencyModulation, IQModulation, AmplitudeModulation, DSBSCModulation
 from plot.plot import SignalPlot
@@ -29,9 +30,19 @@ def main():
     # # #
     # audio.exportWavFromSignal(iq.getSignals(), sampleRate * 4, outputWavFile)
 
-    d = DigitalSignal([0x55], 1, 400, low=-1.0, high=1.0)
-    dsbsc = DSBSCModulation(1.0, 5.3, d, modIndex=0.5)
-    plot = SignalPlot([d, dsbsc])
-    plot.plotSamples(d.getLength())
+    # d = DigitalSignal([0x55], 1, 400, low=-1.0, high=1.0)
+    # dsbsc = DSBSCModulation(1.0, 5.3, d, modIndex=0.5)
+    # plot = SignalPlot([d, dsbsc])
+    # plot.plotSamples(d.getLength())
+
+    msg = "THAIS EH UMA PESSOA MUITO LEGAL, COISA MAIS LINDA DE DEUS, FOFA!"
+    rds = RadioDataSystem(0x00)
+    s = rds.getRadioTextSignal(msg, 960000)
+    rdsSignal = DSBSCModulation(1.0, 57000.0, s, modIndex=0.5)
+    resulting = Normalize(Sum(rdsSignal, pilotSubCarrier), 0.7)
+    fm = FrequencyModulation(1.0, 106300000.0, resulting)
+    iq = IQModulation(1.0, 106300000.0, fm)
+    audio.exportWavFromSignal(iq.getSignals(), rdsSignal.getLength(), outputWavFile)
+
 if __name__ == "__main__":
     main()

@@ -94,3 +94,6 @@ class DSBSCModulation(Modulation):
 
     def getMin(self):
         return self.mod.getMin()
+
+    def getLength(self):
+        return self.mod.getLength()
