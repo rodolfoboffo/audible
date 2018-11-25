@@ -35,14 +35,14 @@ def main():
     # plot = SignalPlot([d, dsbsc])
     # plot.plotSamples(d.getLength())
 
-    msg = "THAIS EH UMA PESSOA MUITO LEGAL, COISA MAIS LINDA DE DEUS, FOFA!"
-    rds = RadioDataSystem(0x00)
-    s = rds.getRadioTextSignal(msg, 960000)
-    rdsSignal = DSBSCModulation(1.0, 57000.0, s, modIndex=0.5)
-    resulting = Normalize(Sum(rdsSignal, pilotSubCarrier), 0.7)
-    fm = FrequencyModulation(1.0, 106300000.0, resulting)
-    iq = IQModulation(1.0, 106300000.0, fm)
-    audio.exportWavFromSignal(iq.getSignals(), rdsSignal.getLength(), outputWavFile)
+    # msg = "THAIS EH UMA PESSOA MUITO LEGAL, COISA MAIS LINDA DE DEUS, FOFA!"
+    # rds = RadioDataSystem(0x00)
+    # s = rds.getRadioTextSignal(msg, 960000)
+    # rdsSignal = Normalize(DSBSCModulation(1.0, 57000.0, s, modIndex=0.5), 0.01)
+    # resulting = Sum(mono, Sum(rdsSignal, pilotSubCarrier))
+    # fm = FrequencyModulation(1.0, 106300000.0, resulting)
+    # iq = IQModulation(1.0, 106300000.0, fm)
+    # audio.exportWavFromSignal(iq.getSignals(), rdsSignal.getLength(), outputWavFile)
 
 if __name__ == "__main__":
     main()

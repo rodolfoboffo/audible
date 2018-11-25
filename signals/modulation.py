@@ -11,6 +11,9 @@ class Modulation(signal.Signal):
         self.samplePeriod = 1.0 / self.sampleRate
         self.modulatingSignal = modulatingSignal
 
+    def getLength(self):
+        return self.modulatingSignal.getLength()
+
 class IQModulation(Modulation):
 
     def __init__(self, amplitude, oscillatorFrequency, modulatingSignal):
@@ -72,6 +75,9 @@ class AmplitudeModulation(Modulation):
     def getMin(self):
         return -(self.amplitude + self.modIndex)
 
+    def getLength(self):
+        return self.mod.getLength()
+
 class DSBSCModulation(Modulation):
 
     def __init__(self, amplitude, carrierFrequency, modulatingSignal, modIndex=0.1):
@@ -94,6 +100,3 @@ class DSBSCModulation(Modulation):
 
     def getMin(self):
         return self.mod.getMin()
-
-    def getLength(self):
-        return self.mod.getLength()

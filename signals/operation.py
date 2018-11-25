@@ -152,3 +152,6 @@ class Normalize(UnaryOperation):
 
     def get(self, index):
         return self.k * self.signal.get(index)
+
+    def getLength(self):
+        return self.signal.getLength()
