@@ -1,3 +1,5 @@
+import math
+
 # def hanningFunction(sampleIndex, totalSamples, sineArray):
 #     return 0.5 - 0.5 * myCos(2 * math.pi * sampleIndex / totalSamples, sineArray)
 #
@@ -16,15 +18,9 @@
 #     return reals, img
 #
 #
-# def getMagnitudesFromDFT(dft):
-#     mags, phases = [], []
-#     if isinstance(dft, tuple):
-#         reals, img = dft
-#         for i in range(len(reals)):
-#             mags.append(math.sqrt(reals[i] * reals[i] + img[i] * img[i]))
-#             phases.append(360.0 * math.atan(img[i] / reals[i]) / (2 * math.pi))
-#     else:
-#         for i in range(len(dft)):
-#             mags.append(math.sqrt(dft[i].real * dft[i].real + dft[i].imag * dft[i].imag))
-#             phases.append(360.0 * math.atan(dft[i].imag / dft[i].real) / (2 * math.pi))
-#     return mags
+def getMagnitudesFromDFT(dft):
+    mags, phases = [], []
+    for i in range(len(dft)):
+        mags.append(math.sqrt(dft[i].real * dft[i].real + dft[i].imag * dft[i].imag))
+        phases.append(360.0 * math.atan(dft[i].imag / dft[i].real) / (2 * math.pi))
+    return mags
