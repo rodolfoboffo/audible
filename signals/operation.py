@@ -1,4 +1,4 @@
-import signal
+import signals.signal as signal
 import math
 
 class BinaryOperation(signal.Signal):

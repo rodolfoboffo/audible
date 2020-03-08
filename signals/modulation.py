@@ -1,4 +1,4 @@
-import signal
+import signals.signal as signal
 import const
 import signals.operation
 from signals.smath import trigonometry

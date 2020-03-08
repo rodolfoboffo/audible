@@ -18,9 +18,9 @@ def crcCheck(value, c, key, dataLength, crcLength):
 
 def main():
     c = crc(int("0b11010011101100", 2), int("0b1011", 2), 14, 3)
-    print bin(c)
+    print(bin(c))
     # print bin(crc(int('0b1100000110000000', 2), int('0b10001001', 2), 16, 7))
-    print crcCheck(int("0b11010011101100", 2), c, int("0b1011", 2), 14, 3)
+    print(crcCheck(int("0b11010011101100", 2), c, int("0b1011", 2), 14, 3))
 
 if __name__ == "__main__":
     main()

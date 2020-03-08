@@ -31,7 +31,7 @@ def exportWavFromSignal(signal, samples, path):
 def main():
     inputWavFile = r"C:\Users\rodolfo\Documents\HDSDR\input.wav"
     signals = extractSignalsFromWav(inputWavFile)
-    print signals
+    print(signals)
 
 if __name__ == "__main__":
     main()

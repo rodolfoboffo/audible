@@ -23,10 +23,10 @@ class RadioDataSystem(object):
 
     def getByteStream(self, text):
         byteStream = []
-        text = map(lambda c: ord(c), text + chr(EOT))
+        text = list(map(lambda c: ord(c), text + chr(EOT)))
         textLength = len(text) if len(text) <= 64 else 64
         croppedText = text[:textLength]
-        for i in range(textLength/2):
+        for i in range(int(textLength/2)):
             byteStream += self.getRadioTextGroup(croppedText[i*2:i*2+1], i)
         return byteStream
 
