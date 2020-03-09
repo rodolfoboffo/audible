@@ -14,7 +14,10 @@ class SignalPlot(object):
         return self.plotSamples(seconds * self.sampleRate)
 
     def plotSamples(self, numberOfSamples):
+        return self.plotInterval(0, int(numberOfSamples))
+
+    def plotInterval(self, begin, end):
         for signal in self.signals:
-            samples = signal.getRange(end=numberOfSamples)
+            samples = signal.getRange(start=int(begin), end=int(end))
             pyplot.plot(self.xAxisFunction(samples), samples)
         return pyplot.show()
