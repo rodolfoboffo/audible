@@ -46,7 +46,7 @@ class Signal(object):
 
     def getRange(self, start=0, end=None):
         i = start
-        j = end or len(self.signal)
+        j = end or self.getLength()
         s = []
         while i < j:
             s.append(self.get(i))

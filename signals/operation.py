@@ -69,6 +69,10 @@ class Multiply(BinaryOperation):
 
     def __init__(self, signal1, signal2):
         op = lambda a, b: a * b
+        if isinstance(signal1, (float, int)):
+            signal1 = signal.ConstantSignal(signal1, signal2.getSampleRate())
+        elif isinstance(signal2, (float, int)):
+            signal2 = signal.ConstantSignal(signal2, signal1.getSampleRate())
         super(Multiply, self).__init__(signal1, signal2, op)
 
     def getMax(self):
@@ -98,6 +102,23 @@ class UnaryOperation(signal.Signal):
     def getLength(self):
         raise Exception("Unimplemented method.")
 
+class Sign(UnaryOperation):
+
+    def __init__(self, signal):
+        super(Sign, self).__init__(signal)
+
+    def get(self, index):
+        return self.getMax() if self.signal.get(index) > 0 else self.getMin()
+
+    def getMax(self):
+        return self.signal.getMax()
+
+    def getMin(self):
+        return self.signal.getMin()
+
+    def getLength(self):
+        return self.signal.getLength()
+
 class Shift(UnaryOperation):
 
     def __init__(self, signal, samplesToShift):
@@ -108,10 +129,10 @@ class Shift(UnaryOperation):
         return self.signal.get(index + self.samplesToShift)
 
     def getMax(self):
-        return self.signal1.getMax()
+        return self.signal.getMax()
 
     def getMin(self):
-        return self.signal1.getMin()
+        return self.signal.getMin()
 
     def integral(self, index):
         return self.signal.integral(index) - self.signal.integral(self.samplesToShift)
